@@ -125,6 +125,91 @@ TBC.
 
 TBC.
 
+### Testing this deployment 
+
+Create the next file `run-my-nginx.yml`:
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-nginx
+spec:
+  selector:
+    matchLabels:
+      run: my-nginx
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        run: my-nginx
+    spec:
+      containers:
+      - name: my-nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+
+```
+
+And now the service ``nginx-svc.yaml``:
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-nginx
+  labels:
+    run: my-nginx
+spec:
+  type: NodePort
+  ports:
+  - port: 8080
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    run: my-nginx
+
+```
+
+Then execute:
+
+```
+kubectl apply -f run-my-nginx.yml
+```
+
+and wait until this command be finished: 
+
+```
+kubectl get pods -l run=my-nginx -o wide
+```
+
+And now start the service:
+
+```
+kubectl apply -f nginx-svc.yaml
+```
+
+Check the status:
+
+```
+kubectl get pods -l run=my-nginx -o wide
+```
+
+And check the port enabled to access externally:
+
+```
+kubectl get svc my-nginx -o yaml | grep nodePort -C 5
+```
+
+Use your CURL tool or a browser to access http://<localhost or IP>:31641: 
+
+```
+curl http://<localhost or IP>:31641
+```
+
+
 ## Rancher
 
 Rancher has different solutions to deploy this platforms (Dev / Production)
