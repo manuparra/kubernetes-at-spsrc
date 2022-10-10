@@ -1,5 +1,14 @@
 # Container Orchestrator at Spanish SKA Regional Centre
 
+  * [Requirements](#requirements)
+  * [Kubernetes](#kubernetes)
+    + [Kubernetes deployment based on Ansible - KubeSpray](#kubernetes-deployment-based-on-ansible---kubespray)
+    + [Kubernetes deployment based on Ansible](#kubernetes-deployment-based-on-ansible)
+    + [Manual installation of Kubernetes](#manual-installation-of-kubernetes)
+  * [Rancher](#rancher)
+    + [One node - Default Rancher-generated Self-signed Certificate and CA Certificate](#one-node---default-rancher-generated-self-signed-certificate-and-ca-certificate)
+    + [Rancher of Kubernetes](#rancher-of-kubernetes)
+
 ## Requirements
 
 - Two nodes/VMs with access to Internet and internal/external IP. One VM will act as Master (node1) and the another as worker(node2).
@@ -7,7 +16,9 @@
 - One VM/node where you have access to both VMs using you SSH public key (seed node).
  - You have to copy you public key in both VMs for the same user (in this tutorial: ubuntu is the user). 
 
-## Kubernetes deployment based on Ansible - KubeSpray 
+## Kubernetes
+
+### Kubernetes deployment based on Ansible - KubeSpray 
 
 First, go to your Seed node. 
 
@@ -105,6 +116,14 @@ And then finally type the next:
 ansible-playbook -i inventory/mycluster/hosts.yaml  --become --become-user=root cluster.yml --private-key=~/.ssh/id_rsa
 ```
 
+### Kubernetes deployment based on Ansible
+
+TBC.
+
+
+### Manual installation of Kubernetes
+
+TBC.
 
 ## Rancher
 
