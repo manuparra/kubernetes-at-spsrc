@@ -106,5 +106,120 @@ ansible-playbook -i inventory/mycluster/hosts.yaml  --become --become-user=root 
 ```
 
 
+## Rancher
+
+Rancher has different solutions to deploy this platforms.
+
+### One node - Default Rancher-generated Self-signed Certificate and CA Certificate
+
+If you are installing Rancher in a development or testing environment where identity verification isn't a concern, install Rancher using the self-signed certificate that it generates. This installation option omits the hassle of generating a certificate yourself.
+
+Log into your host, and run the command below:
+
+```
+docker run -d --restart=unless-stopped -p 80:80 -p 443:443 --privileged  rancher/rancher:latest
+```
+
+or with your CAs:
+
+```
+docker run -d --restart=unless-stopped  -p 80:80 -p 443:443   -v /<CERT_DIRECTORY>/<FULL_CHAIN.pem>:/etc/rancher/ssl/cert.pem   -v /<CERT_DIRECTORY>/<PRIVATE_KEY.pem>:/etc/rancher/ssl/key.pem   -v /<CERT_DIRECTORY>/<CA_CERTS.pem>:/etc/rancher/ssl/cacerts.pem   --privileged   rancher/rancher:latest
+```
+
+### Rancher of Kubernetes
+
+**Add the Helm Chart Repository**
+
+Use helm repo add command to add the Helm chart repository that contains charts to install Rancher. For more information about the repository choices and which is best for your use case, see Choosing a Version of Rancher.
+
+Latest: Recommended for trying out the newest features
+
+```
+helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
+```
+
+Stable: Recommended for production environments
+
+```
+helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
+```
+
+**Create a Namespace for Rancher**
+
+We'll need to define a Kubernetes namespace where the resources created by the Chart should be installed. This should always be cattle-system:
+
+```
+kubectl create namespace cattle-system
+```
+
+**Choose your SSL Configuration**
+
+The Rancher management server is designed to be secure by default and requires SSL/TLS configuration.
+
+- Let's Encrypt: The Let's Encrypt option also uses cert-manager. However, in this case, cert-manager is combined with a special Issuer for Let's Encrypt that performs all actions (including request and validation) necessary for getting a Let's Encrypt issued cert. This configuration uses HTTP validation (HTTP-01), so the load balancer must have a public DNS record and be accessible from the internet.
+- Your own certificate: This option allows you to bring your own public- or private-CA signed certificate. Rancher will use that certificate to secure websocket and HTTPS traffic. In this case, you must upload this certificate (and associated key) as PEM-encoded files with the name tls.crt and tls.key. If you are using a private CA, you must also upload that certificate. This is due to the fact that this private CA may not be trusted by your nodes. Rancher will take that CA certificate, and generate a checksum from it, which the various Rancher components will use to validate their connection to Rancher.
+
+```
+Rancher Generated Certificates (Default)	ingress.tls.source=rancher	yes
+Let’s Encrypt	ingress.tls.source=letsEncrypt	yes
+Certificates from Files	ingress.tls.source=secret	no
+```
+
+**Install Rancher with Helm and Your Chosen Certificate Option**
+
+The exact command to install Rancher differs depending on the certificate configuration. However, irrespective of the certificate configuration, the name of the Rancher installation in the cattle-system namespace should always be rancher.
+
+This option uses cert-manager to automatically request and renew Let's Encrypt certificates. This is a free service that provides you with a valid certificate as Let's Encrypt is a trusted CA.
+note
+
+In the following command,
+
+>    hostname is set to the public DNS record,
+>    Set the bootstrapPassword to something unique for the admin user.
+>    ingress.tls.source is set to letsEncrypt
+>    letsEncrypt.email is set to the email address used for communication about your certificate (for example, expiry notices)
+>    Set letsEncrypt.ingress.class to whatever your ingress controller is, e.g., traefik, nginx, haproxy, etc.
+
+
+```
+helm install rancher rancher-<CHART_REPO>/rancher \
+  --namespace cattle-system \
+  --set hostname=rancher.my.org \
+  --set bootstrapPassword=admin \
+  --set ingress.tls.source=letsEncrypt \
+  --set letsEncrypt.email=me@example.org \
+  --set letsEncrypt.ingress.class=nginx
+```
+
+If you are installing an alpha version, Helm requires adding the --devel option to the install command:
+
+*Note: change to the stable version!*
+
+```
+helm install rancher rancher-alpha/rancher --devel
+```
+
+Wait for Rancher to be rolled out:
+
+```
+kubectl -n cattle-system rollout status deploy/rancher
+Waiting for deployment "rancher" rollout to finish: 0 of 3 updated replicas are available...
+deployment "rancher" successfully rolled out
+```
+
+**Verify that the Rancher Server is Successfully Deployed**
+
+After adding the secrets, check if Rancher was rolled out successfully:
+
+```
+kubectl -n cattle-system rollout status deploy/rancher
+Waiting for deployment "rancher" rollout to finish: 0 of 3 updated replicas are available...
+deployment "rancher" successfully rolled out
+```
+
+**Test**
+
+In a web browser, go to the DNS name that forwards traffic to your load balancer.
+
 
 
