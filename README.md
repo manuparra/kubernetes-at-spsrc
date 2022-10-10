@@ -127,9 +127,9 @@ TBC.
 
 ## Rancher
 
-Rancher has different solutions to deploy this platforms.
+Rancher has different solutions to deploy this platforms (Dev / Production)
 
-### One node - Default Rancher-generated Self-signed Certificate and CA Certificate
+### Development option: One node - Default Rancher-generated Self-signed Certificate and CA Certificate
 
 If you are installing Rancher in a development or testing environment where identity verification isn't a concern, install Rancher using the self-signed certificate that it generates. This installation option omits the hassle of generating a certificate yourself.
 
