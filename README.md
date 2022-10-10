@@ -5,8 +5,9 @@
     + [Kubernetes deployment based on Ansible - KubeSpray](#kubernetes-deployment-based-on-ansible---kubespray)
     + [Kubernetes deployment based on Ansible](#kubernetes-deployment-based-on-ansible)
     + [Manual installation of Kubernetes](#manual-installation-of-kubernetes)
+    + [Testing this deployment](#testing-this-deployment)
   * [Rancher](#rancher)
-    + [One node - Default Rancher-generated Self-signed Certificate and CA Certificate](#one-node---default-rancher-generated-self-signed-certificate-and-ca-certificate)
+    + [Development option: One node - Default Rancher-generated Self-signed Certificate and CA Certificate](#development-option--one-node---default-rancher-generated-self-signed-certificate-and-ca-certificate)
     + [Rancher of Kubernetes](#rancher-of-kubernetes)
 
 ## Requirements
