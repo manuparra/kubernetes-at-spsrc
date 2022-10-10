@@ -1,0 +1,22 @@
+---
+
+#- name: Disable firewalld Services
+#    service:
+#    name: "{{item}}"
+#    state: stopped  
+#    enabled: no
+#    loop:
+#      - firewalld
+#    register: firewalld_service_disable
+#    failed_when: "firewalld_service_disable|failed and ('Could not find the requested service' not in firewalld_service_disable.msg)"
+#    ignore_errors: yes
+#    tags: test
+
+# If Ansible 2.9
+- name: Stop service 
+  become: yes
+  systemd:
+    name: firewalld
+    state: stopped
+    #enable: no
+    ignore_errors: yes

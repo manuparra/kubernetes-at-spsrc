@@ -1,0 +1,51 @@
+---
+
+- name: Disabling SWAP
+  shell: "swapoff --all"
+  when: (swap_used.stdout_lines[0] | int) > 0
+  ignore_errors: yes
+
+- name: Transfer k8s.conf
+  ansible.builtin.copy:
+    src: k8s.conf
+    dest: /etc/sysctl.d/
+    mode: 0644
+  ignore_errors: yes
+
+- name: sysctl
+  become: yes
+  command: sysctl --system
+
+- name: Transfer kubernetes.repo
+  ansible.builtin.copy:
+    src: kubernetes.repo
+    dest: /etc/yum.repos.d/
+    mode: 0644
+  ignore_errors: yes
+
+- name: Install a Kube packages 
+  become: yes
+  ansible.builtin.yum:
+    name:
+      - kubeadm
+      - kubelet
+      - kubectl
+    state: present
+    
+- name: Enable service kubelet 
+  ansible.builtin.systemd:
+    name: kubelet
+    enabled: yes
+
+- name: Remove file
+  become: yes
+  command: rm /etc/containerd/config.toml
+  ignore_errors: yes
+
+- name: Restart containerd
+  become: yes
+  command: systemctl restart containerd
+  ignore_errors: yes
+
+
+

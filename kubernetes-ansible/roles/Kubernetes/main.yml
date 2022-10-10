@@ -1,0 +1,41 @@
+---
+
+- name: Disabling SWAP
+  shell: "swapoff --all"
+  when: (swap_used.stdout_lines[0] | int) > 0
+ 
+- name: Edit K8s
+  ansible.builtin.blockinfile:
+  path: /etc/sysctl.d/k8s.conf
+  insertafter: EOF
+  block: |
+    net.bridge.bridge-nf-call-ip6tables = 1
+    net.bridge.bridge-nf-call-iptables = 1
+
+- name: Edit kubernetes repo
+  become: yes
+  ansible.builtin.blockinfile:
+  path: /etc/yum.repos.d/kubernetes.repo
+  insertafter: EOF
+  block: |
+    [kubernetes]
+    name=Kubernetes
+    baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-$basearch
+    enabled=1
+    gpgcheck=0
+    repo_gpgcheck=0
+    gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg         https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+
+- name: Install a list of packages 
+  become: yes
+  ansible.builtin.yum:
+    name:
+      - kubeadm
+      - kubelet
+      - kubectl
+    state: present
+    
+ - name: Enable service kubelet 
+   ansible.builtin.systemd:
+    name: kubelet
+    enabled: yes

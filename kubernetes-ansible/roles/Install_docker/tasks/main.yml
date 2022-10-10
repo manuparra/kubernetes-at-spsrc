@@ -1,0 +1,38 @@
+---
+
+- name: Copy repo
+  become: yes
+  command: curl https://download.docker.com/linux/centos/docker-ce.repo -o /etc/yum.repos.d/docker-ce.repo
+  
+- name: Sed
+  become: yes
+  command: sed -i -e "s/enabled=1/enabled=0/g" /etc/yum.repos.d/docker-ce.repo
+
+- name: Enable Repo Docker
+  become: yes
+  command: yum-config-manager --enable docker-ce-stable -y
+  
+- name: Install Docker-CE
+  ansible.builtin.yum:
+    name:
+      - docker-ce
+    state: present
+
+- name: Enable Docker
+  become: yes
+  command: systemctl enable --now docker
+  
+- name: Enable Docker
+  become: yes
+  command: rpm -q docker-ce
+  
+- name: Download Offical Image
+  become: yes
+  command: docker pull centos
+  
+#- name: Run Container
+#  become: yes
+#  command: docker run centos /bin/echo "Welcome to the Docker World"
+ 
+ 
+  
