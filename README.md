@@ -8,7 +8,8 @@
   * [Rancher](#rancher)
     + [Development option: One node - Default Rancher-generated Self-signed Certificate and CA Certificate](#development-option--one-node---default-rancher-generated-self-signed-certificate-and-ca-certificate)
     + [Rancher of Kubernetes](#rancher-of-kubernetes)
-
+    + [Add a new Kubernetes Cluster to Rancher](#add-a-new-kubernetes-cluster-to-rancher)
+    + [Manage federated cluster with Rancher and kubernetes](#manage-federated-cluster-cli)
 
 
 ## Requirements
@@ -517,5 +518,70 @@ deployment "rancher" successfully rolled out
 
 In a web browser, go to the DNS name that forwards traffic to your load balancer.
 
+### Add a new Kubernetes Cluster to Rancher
+ 
+Go to ``Import Cluster``:
+ 
+![imagen](https://user-images.githubusercontent.com/7033451/195204549-2fd7df46-8161-42a9-bddf-5dc334c92a72.png)
 
+Add a Cluster Name and Description, and finally click "Create".
+ 
+Then:
+ 
+Run the kubectl command below on an existing Kubernetes cluster running a supported Kubernetes version to import it into Rancher:
 
+```
+kubectl apply -f https://161.111.167.189:18019/v3/import/dtkltbwtcjzzrx4jtfc4d87sl54wc5lgw6xlx8v7gz7j4ncl6l967h_c-m-4hm5dj9p.yaml
+```
+ 
+If you get a "certificate signed by unknown authority" error, your Rancher installation has a self-signed or untrusted SSL certificate. Run the command below instead to bypass the certificate verification:
+
+```
+curl --insecure -sfL https://161.111.167.189:18019/v3/import/dtkltbwtcjzzrx4jtfc4d87sl54wc5lgw6xlx8v7gz7j4ncl6l967h_c-m-4hm5dj9p.yaml | kubectl apply -f -
+```
+
+If you get permission errors creating some of the resources, your user may not have the cluster-admin role. Use this command to apply it:
+
+```
+kubectl create clusterrolebinding cluster-admin-binding --clusterrole cluster-admin --user <your username from your kubeconfig> 
+```
+
+After this command you will see:
+ 
+![imagen](https://user-images.githubusercontent.com/7033451/195205044-a0f51fc0-3483-4493-a7ed-a5b4dd42b31d.png)
+
+SPSRC Kubernetes Cluster is enabled and ready to use.
+ 
+
+### Manage federated cluster CLI
+ 
+The Rancher CLI (Command Line Interface) is a unified tool that you can use to interact with Rancher. With this tool, you can operate Rancher using a command line rather than the GUI.
+
+ https://docs.ranchermanager.rancher.io/reference-guides/cli-with-rancher/rancher-cli
+ 
+**Project Selection**
+
+Before you can perform any commands, you must select a Rancher project to perform those commands against. To select a project to work on, use the command ``./rancher context switch``. When you enter this command, a list of available projects displays. Enter a number to choose your project.
+
+Example: ``./rancher context switch`` Output
+
+Ensure you can run ``rancher kubectl get pods`` successfully.
+ 
+**Commands**
+
+The following commands are available for use in Rancher CLI.
+ 
+- apps, [app]	Performs operations on catalog applications (i.e., individual Helm charts) or Rancher charts.
+- catalog	Performs operations on catalogs.
+- clusters, [cluster]	Performs operations on your clusters.
+- context	Switches between Rancher projects. For an example, see Project Selection.
+- inspect [OPTIONS] [RESOURCEID RESOURCENAME]	Displays details about Kubernetes resources or Rancher resources (i.e.: projects and workloads). Specify resources by name or ID.
+- kubectl	Runs kubectl commands.
+- login, [l]	Logs into a Rancher Server. For an example, see CLI Authentication.
+- namespaces, [namespace]	Performs operations on namespaces.
+- nodes, [node]	Performs operations on nodes.
+- projects, [project]	Performs operations on projects.
+- ps	Displays workloads in a project.
+- settings, [setting]	Shows the current settings for your Rancher Server.
+- ssh	Connects to one of your cluster nodes using the SSH protocol.
+ 
