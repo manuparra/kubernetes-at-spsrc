@@ -302,7 +302,17 @@ kubectl get storageclass nfs-client
 
 In this point you can use ``nfs-client`` as StorageClass for you deployments in Kubernetes.
 
+For example:
 
+
+```
+...
+ storage:
+    dynamic:
+      storageClass: nfs-client
+    extraVolumes:
+...
+```
 
 ### Testing this deployment 
 
