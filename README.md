@@ -122,12 +122,12 @@ ansible-playbook -i inventory/mycluster/hosts.yaml  --become --become-user=root 
 
 First, go to your Seed node.
 
-Clone the repo on the seed node
+Clone the repo in the seed node
 
 ```
 git clone https://github.com/manuparra/orchestrator-at-spsrc.git
 ```
-Go to folder kubernetes-ansible and edit the inventories with your data
+Go to kubernetes-ansible folder, and edit the inventories with your data
 ```
 vi inventories/list
 ```
@@ -135,25 +135,25 @@ Launch the playbook
 ```
 ansible-playbook -i inventories/list Kubernetes.yml
 ```
-the installation consists of the following points:
+The installation consists of the following points:
 * Install dockers
 * Disable SElinux
 * Disable firewalld
 * Install kubernetes
 
-After the installation finished, you need to follow the next steps:
+Once the installation is finished, you have to follow the next steps:
 
-1.- On the master node you need to run:
+1.- On the master node you have to execute:
 ```
 kubeadm init --apiserver-advertise-address=<IP-master-node> --pod-network-cidr=10.244.0.0/16
 ```
-After the process is over, you can see the discovery token.
+Once the process is finished, you can see the ``discovery token``.
 For example:
 ```
 kubeadm join IP-master-node:6443 --token 31eeyr.uxvpz3b0teajkaki \
         --discovery-token-ca-cert-hash sha256:f2caf4fe6f26dc6cc8188b55ee3c825e5b8d9779a61bfd4eda4b152627e56184
 ```
-You will need this token for worker node.
+You will need this token for the worker node.
 
 Set cluster admin user
 ```
@@ -166,18 +166,18 @@ Configure Pod Network with Flannel
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 ```
 
-Check the state of the deploy
+Check deploy status
 ```
 kubectl get pods --all-namespaces
 ```
 
-2.- In the Worker Node you need to run:
+2.- In the Worker Node you have to run:
 ```
 kubeadm join <IP-master-node>:6443 --token 31eeyr.uxvpz3b0teajkaki \
 --discovery-token-ca-cert-hash sha256:f2caf4fe6f26dc6cc8188b55ee3c825e5b8d9779a61bfd4eda4b152627e56184
 ```
 
-Check the status
+Check status
 ```
 kubectl get nodes
 ```
