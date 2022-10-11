@@ -5,10 +5,11 @@
     + [Kubernetes deployment based on Ansible - KubeSpray](#kubernetes-deployment-based-on-ansible---kubespray)
     + [Kubernetes deployment based on Ansible](#kubernetes-deployment-based-on-ansible)
     + [Manual installation of Kubernetes](#manual-installation-of-kubernetes)
-    + [Testing this deployment](#testing-this-deployment)
   * [Rancher](#rancher)
     + [Development option: One node - Default Rancher-generated Self-signed Certificate and CA Certificate](#development-option--one-node---default-rancher-generated-self-signed-certificate-and-ca-certificate)
     + [Rancher of Kubernetes](#rancher-of-kubernetes)
+
+
 
 ## Requirements
 
@@ -119,7 +120,67 @@ ansible-playbook -i inventory/mycluster/hosts.yaml  --become --become-user=root 
 
 ### Kubernetes deployment based on Ansible
 
-TBC.
+First, go to your Seed node.
+
+Clone the repo on the seed node
+
+```
+git clone https://github.com/manuparra/orchestrator-at-spsrc.git
+```
+Go to folder kubernetes-ansible and edit the inventories with your data
+```
+vi inventories/list
+```
+Launch the playbook
+```
+ansible-playbook -i inventories/list Kubernetes.yml
+```
+the installation consists of the following points:
+* Install dockers
+* Disable SElinux
+* Disable firewalld
+* Install kubernetes
+
+After the installation finished, you need to follow the next steps:
+
+1.- On the master node you need to run:
+```
+kubeadm init --apiserver-advertise-address=<IP-master-node> --pod-network-cidr=10.244.0.0/16
+```
+After the process is over, you can see the discovery token.
+For example:
+```
+kubeadm join IP-master-node:6443 --token 31eeyr.uxvpz3b0teajkaki \
+        --discovery-token-ca-cert-hash sha256:f2caf4fe6f26dc6cc8188b55ee3c825e5b8d9779a61bfd4eda4b152627e56184
+```
+You will need this token for worker node.
+
+Set cluster admin user
+```
+mkdir -p $HOME/.kube
+cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+chown $(id -u):$(id -g) $HOME/.kube/config
+```
+Configure Pod Network with Flannel
+```
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+```
+
+Check the state of the deploy
+```
+kubectl get pods --all-namespaces
+```
+
+2.- In the Worker Node you need to run:
+```
+kubeadm join <IP-master-node>:6443 --token 31eeyr.uxvpz3b0teajkaki \
+--discovery-token-ca-cert-hash sha256:f2caf4fe6f26dc6cc8188b55ee3c825e5b8d9779a61bfd4eda4b152627e56184
+```
+
+Check the status
+```
+kubectl get nodes
+```
 
 
 ### Manual installation of Kubernetes
