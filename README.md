@@ -185,7 +185,85 @@ kubectl get nodes
 
 ### Manual installation of Kubernetes
 
-TBC.
+
+```
+swapoff -a
+```
+
+
+```
+vi /etc/fstab
+# disable swap
+
+#/dev/mapper/cl-swap swap swap defaults 0 0 
+```
+
+
+```
+cat <<EOF > /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+```
+
+Then: ```sysctl --system```
+
+
+```
+cat <<'EOF' > /etc/yum.repos.d/kubernetes.repo
+
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-$basearch
+enabled=1
+gpgcheck=0
+repo_gpgcheck=0
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF
+```
+
+Then:
+
+
+```
+yum -y install kubeadm kubelet kubectl 
+```
+
+And
+
+```
+systemctl enable kubelet 
+```
+
+Initialise the master node:
+
+
+```
+kubeadm init --apiserver-advertise-address=192.168.250.100 --pod-network-cidr=10.244.0.0/16 
+```
+*Note: Change pod network if needed. And check if you Firewall is not blocking it*
+
+Then enable kubectl from the user:
+
+```
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
+Command ``kubeadmin init ... `` will give you an output like the next:
+
+
+```
+kubeadm join 192.168.250.100:6443 --token 31eeyr.uxvpz3b0teajkaki \
+        --discovery-token-ca-cert-hash sha256:f2caf4fe6f26dc6cc8188b55ee3c825e5b8d9779a61bfd4eda4b152627e56184
+```
+
+Execute it on all the workers nodes.
+
+
+
+
 
 ### Testing this deployment 
 
