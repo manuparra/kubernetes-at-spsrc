@@ -185,11 +185,19 @@ kubectl get nodes
 
 ### Manual installation of Kubernetes
 
+Pre-requisites:
+
+- Start installing Docker for all the nodes (workers and master). 
+- Remove all the rules within the firewall.
+- Disable SELinux.
+
+**Installation**
+
+Disable swap:
 
 ```
 swapoff -a
 ```
-
 
 ```
 vi /etc/fstab
@@ -198,6 +206,7 @@ vi /etc/fstab
 #/dev/mapper/cl-swap swap swap defaults 0 0 
 ```
 
+Apply forwarding: 
 
 ```
 cat <<EOF > /etc/sysctl.d/k8s.conf
@@ -209,6 +218,7 @@ EOF
 Then: ```sysctl --system```
 
 
+Add a Kubernetes repo:
 ```
 cat <<'EOF' > /etc/yum.repos.d/kubernetes.repo
 
@@ -259,9 +269,38 @@ kubeadm join 192.168.250.100:6443 --token 31eeyr.uxvpz3b0teajkaki \
         --discovery-token-ca-cert-hash sha256:f2caf4fe6f26dc6cc8188b55ee3c825e5b8d9779a61bfd4eda4b152627e56184
 ```
 
-Execute it on all the workers nodes.
+Execute it on all the workers nodes and then go to [Testing this deployment](#testing-this-deployment), in order to check if the platform is working.
 
+**Next step is to configure StorageClass by using NFS**
 
+1. Install NFS service on an external storage resource (folder ``/data/nfs1``).
+2. Install NFS client on each node (*all workers and master*).
+
+Then go to the Master Node and execute:
+
+*You have to install HELM for Kubernetes: https://helm.sh/docs/intro/install/*
+
+```
+helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
+```
+
+Then install StorageClass provisioner:
+
+```
+helm install nfs-subdir-external-provisioner \
+nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+--set nfs.server=192.168.250.50 \
+--set nfs.path=/data/nfs1 \
+--set storageClass.onDelete=true
+```
+
+Then check if storageclass is installed:
+
+```
+kubectl get storageclass nfs-client
+```
+
+In this point you can use ``nfs-client`` as StorageClass for you deployments in Kubernetes.
 
 
 
